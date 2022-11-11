@@ -31,7 +31,7 @@ class Gui:
         #reset button
         self.btn_reset = tk.Button(master=self.frame,text="\U0001F600",width=2,height=1,borderwidth=4,font=self.resetButtonFont)
         self.btn_reset.grid(row=0,column=1,padx=50)
-        self.btn_reset.bind("<Button-1>",self.setupResetButton)
+        self.btn_reset.config(command = self.setupResetButton)
         #bombcount button
         self.lbl_bombcount = tk.Label(master=self.frame,text="0",width=3,height=2,borderwidth=4,bg="black",fg="red",relief="raised")
         self.lbl_bombcount.grid(row=0,column=2)
@@ -72,10 +72,10 @@ class Gui:
     #called by setupBombButtons with z being the indexes of the columnsRowsList with bombs
     def bomb(self,z):
         self.columnsRowsList[z].config(text="  ")
-        self.columnsRowsList[z].bind("<Button-1>", self.bombClick)
+        self.columnsRowsList[z].config(command = self.bombClick)
 
     #logic for when you click a bomb, makes all "  " buttons display a bomb
-    def bombClick(self,event):
+    def bombClick(self):
         #make gamerunning False so timer() stops counting
         self.gamerunning = False
 
@@ -83,7 +83,8 @@ class Gui:
             if self.columnsRowsList[x]['text'] == "  ":
                 self.columnsRowsList[x].config(text="💣")
                 self.columnsRowsList[x].config(relief="sunken")
-        self.btn_reset.config(text="☹")
+        
+        self.btn_reset.config(text = "☹")
 
         #make buttons unclickable
         for x in range(len(self.columnsRowsList)):
@@ -98,22 +99,32 @@ class Gui:
             self.gamerunning = True
             self.timer()
         #if click on "no bomb" button change text to number of bombs around it and make button sunken
-        if self.columnsRowsList[index]["text"] == " ":
+        if self.columnsRowsList[index]["text"] == " " and self.columnsRowsList[index]['relief'] == 'raised':
             self.columnsRowsList[index].config(text=str(self.bombcounter(indexOfClicked=index)),relief="sunken")
-            #self.cascadeCheck(index)
+            #if the button clicked has no bombs surrounding it, cascade
+            if self.bombcounter(indexOfClicked=index) == " ":
+                self.cascadeEffect(index)
 
 
         #check if game won logic
+        self.win()
+
+    def win(self):
         c = 0
         for x in range(len(self.columnsRowsList)):
-            
             if self.columnsRowsList[x]["relief"] == "sunken":
                 c+=1
-        if c == (99 - self.howManyBombs):
+
+        if c == (100 - self.howManyBombs):
             self.gamerunning = False
             self.btn_reset.config(text="!")
+            #make buttons unclickable
             for x in range(len(self.columnsRowsList)):
-                self.columnsRowsList[x]['state'] = 'disabled'
+                if self.columnsRowsList[x]['text'] == "  ":
+                    self.columnsRowsList[x]['text'] = "💣"
+                    self.columnsRowsList[x].config(state = 'disabled')
+    
+
 
     #timer
     def timer(self):
@@ -141,10 +152,6 @@ class Gui:
         if bombcount > 0:
             return bombcount
         else:
-            self.columnsRowsList[indexOfClicked]['relief'] = 'sunken'
-            #self.cascadeCheck(indexOfClicked)
-            
-            #for now return " " but eventually cal a function that depresses buttons with no bombs
             return " "
 
     #checks the middle buttons in relation to the indexOfClicked
@@ -153,66 +160,28 @@ class Gui:
 
         if self.columnsRowsList[indexOfClicked - 11]['text'] == "  ":
             bombcounter+=1
-        else:
-            #self.columnsRowsList[indexOfClicked-11]['relief'] = 'sunken'
-            #self.normalClick(indexOfClicked-11)
-            pass
           
-
         if self.columnsRowsList[indexOfClicked - 1]['text'] == "  ":
             bombcounter += 1
-        else:
-            #self.columnsRowsList[indexOfClicked-1]['relief'] = 'sunken'
-            #self.normalClick(indexOfClicked-1)
-            pass
 
         if self.columnsRowsList[indexOfClicked + 9]['text'] == "  ":
             bombcounter += 1
-        else:
-            #self.columnsRowsList[indexOfClicked+9]['relief'] = 'sunken'
-            #self.normalClick(indexOfClicked+9)
-            pass
-            
 
         if self.columnsRowsList[indexOfClicked - 10]['text'] == "  ":
             bombcounter += 1
-        else:
-            #self.columnsRowsList[indexOfClicked-10]['relief'] = 'sunken'
-            #self.normalClick(indexOfClicked-10)
-            pass
             
-
         if self.columnsRowsList[indexOfClicked + 10]['text'] == "  ":
             bombcounter += 1
-        else:
-            #self.columnsRowsList[indexOfClicked+10]['relief'] = 'sunken'
-            #self.normalClick(indexOfClicked+10)
-            pass
-            
-
+        
         if self.columnsRowsList[indexOfClicked - 9]['text'] == "  ":
             bombcounter += 1
-        else:
-            #self.columnsRowsList[indexOfClicked-9]['relief'] = 'sunken'
-            #self.normalClick(indexOfClicked-9)
-            pass
-            
-
+        
         if self.columnsRowsList[indexOfClicked + 1]['text'] == "  ":
             bombcounter += 1
-        else:
-            #self.columnsRowsList[indexOfClicked+1]['relief'] = 'sunken'
-            #self.normalClick(indexOfClicked+1)
-            pass
-            
-
+        
         if self.columnsRowsList[indexOfClicked + 11]['text'] == "  ":
             bombcounter += 1
-        else:
-            #self.columnsRowsList[indexOfClicked+11]['relief'] = 'sunken'
-            #self.normalClick(indexOfClicked+11)
-            pass
-            
+        
 
         return bombcounter
 
@@ -222,89 +191,120 @@ class Gui:
         #left edge case
         listOfLeftEdgeCases = [10,20,30,40,50,60,70,80]
         if indexOfClicked in listOfLeftEdgeCases:
-            if self.columnsRowsList[indexOfClicked-10]['text'] == "  ":
+            if self.columnsRowsList[indexOfClicked - 10]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked-9]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked - 9]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+1]['text'] == "  ":
+           
+            if self.columnsRowsList[indexOfClicked + 1]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+11]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked + 11]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+10]['text'] == "  ":
+
+            if self.columnsRowsList[indexOfClicked + 10]['text'] == "  ":
                 bombcount +=1
+ 
         #right edge case
         listOfRightEdgeCases = [19,29,39,49,59,69,79,89]
         if indexOfClicked in listOfRightEdgeCases:
-            if self.columnsRowsList[indexOfClicked-11]['text'] == "  ":
+            if self.columnsRowsList[indexOfClicked - 11]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked-10]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked - 10]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked-1]['text'] == "  ":
+
+            if self.columnsRowsList[indexOfClicked - 1]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+9]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked + 9]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+10]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked + 10]['text'] == "  ":
                 bombcount +=1
+
         #corner edge cases
         if indexOfClicked == 0:
-            if self.columnsRowsList[indexOfClicked+1]['text'] == "  ":
+            if self.columnsRowsList[indexOfClicked + 1]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+11]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked + 11]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+10]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked + 10]['text'] == "  ":
                 bombcount +=1
+           
         if indexOfClicked == 9:
-            if self.columnsRowsList[indexOfClicked-1]['text'] == "  ":
+            if self.columnsRowsList[indexOfClicked - 1]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+9]['text'] == "  ":
+           
+            if self.columnsRowsList[indexOfClicked + 9]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+10]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked + 10]['text'] == "  ":
                 bombcount +=1
+
         if indexOfClicked == 90:
-            if self.columnsRowsList[indexOfClicked-10]['text'] == "  ":
+            if self.columnsRowsList[indexOfClicked - 10]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked-9]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked - 9]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+1]['text'] == "  ":
+
+            if self.columnsRowsList[indexOfClicked + 1]['text'] == "  ":
                 bombcount +=1
+
         if indexOfClicked == 99:
-            if self.columnsRowsList[indexOfClicked-11]['text'] == "  ":
+            if self.columnsRowsList[indexOfClicked - 11]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked-10]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked - 10]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked-1]['text'] == "  ":
+
+            if self.columnsRowsList[indexOfClicked - 1]['text'] == "  ":
                 bombcount +=1
+            
         #top edge cases
         listOfTopEdgeCases = [1,2,3,4,5,6,7,8]
         if indexOfClicked in listOfTopEdgeCases:
-            if self.columnsRowsList[indexOfClicked-1]['text'] == "  ":
+            if self.columnsRowsList[indexOfClicked - 1]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+1]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked + 1]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+9]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked + 9]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+10]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked + 10]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+11]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked + 11]['text'] == "  ":
                 bombcount +=1
+            
         #bottom edge cases
         listOfBottomEdgeCases = [91,92,93,94,95,96,97,98]
         if indexOfClicked in listOfBottomEdgeCases:
-            if self.columnsRowsList[indexOfClicked-1]['text'] == "  ":
+            if self.columnsRowsList[indexOfClicked - 1]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked+1]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked + 1]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked-11]['text'] == "  ":
+            
+            if self.columnsRowsList[indexOfClicked - 11]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked-10]['text'] == "  ":
+           
+            if self.columnsRowsList[indexOfClicked - 10]['text'] == "  ":
                 bombcount +=1
-            if self.columnsRowsList[indexOfClicked-9]['text'] == "  ":
+           
+            if self.columnsRowsList[indexOfClicked - 9]['text'] == "  ":
                 bombcount +=1
-
+            
         return bombcount
 
     #reset button logic
-    def setupResetButton(self,event):
+    def setupResetButton(self):
         self.columnsRowsList.clear()
         self.btn_reset.config(text="\U0001F600")
         self.seconds = 0
@@ -317,108 +317,148 @@ class Gui:
         self.setupBombButtons()
 
     #logic for cascade effect
-    def cascadeCheck(self, indexOfClicked):
+    #after every button is checked, win logic is processed to check if win conditions are met
+    def cascadeEffect(self, indexOfClicked):
         #checks the middle buttons in relation to the indexOfClicked
         
         if indexOfClicked not in self.listOfEdgeCases:
             if self.columnsRowsList[indexOfClicked - 11]['text'] != "  ":
-                self.normalClick(indexOfClicked-11)
+                self.columnsRowsList[indexOfClicked - 11].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 11)),relief="sunken")
+                self.win()
             if self.columnsRowsList[indexOfClicked - 1]['text'] != "  ":
-                self.normalClick(indexOfClicked-1)
+                self.columnsRowsList[indexOfClicked - 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 1)),relief="sunken")
+                self.win()
             if self.columnsRowsList[indexOfClicked + 9]['text'] != "  ":
-                self.normalClick(indexOfClicked+9)
+                self.columnsRowsList[indexOfClicked + 9].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 9)),relief="sunken")
+                self.win()
             if self.columnsRowsList[indexOfClicked - 10]['text'] != "  ":
-                self.normalClick(indexOfClicked-10)
+                self.columnsRowsList[indexOfClicked - 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 10)),relief="sunken")
+                self.win()
             if self.columnsRowsList[indexOfClicked + 10]['text'] != "  ":
-                self.normalClick(indexOfClicked+10)     
+                self.columnsRowsList[indexOfClicked + 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 10)),relief="sunken")
+                self.win()    
             if self.columnsRowsList[indexOfClicked - 9]['text'] != "  ":
-                self.normalClick(indexOfClicked-9)               
+                self.columnsRowsList[indexOfClicked - 9].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 9)),relief="sunken")
+                self.win()             
             if self.columnsRowsList[indexOfClicked + 1]['text'] != "  ":
-                self.normalClick(indexOfClicked+1)  
+                self.columnsRowsList[indexOfClicked + 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 1)),relief="sunken")
+                self.win() 
             if self.columnsRowsList[indexOfClicked + 11]['text'] != "  ":
-                self.normalClick(indexOfClicked+11)
+                self.columnsRowsList[indexOfClicked + 11].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 11)),relief="sunken")
+                self.win()
         #checks edge cases in relation to indexOfClicked
         else:
             listOfLeftEdgeCases = [10,20,30,40,50,60,70,80]
             if indexOfClicked in listOfLeftEdgeCases:
-                if self.columnsRowsList[indexOfClicked-10]['text'] != "  ":
-                    self.normalClick(indexOfClicked-10)
-                if self.columnsRowsList[indexOfClicked-9]['text'] != "  ":
-                    self.normalClick(indexOfClicked-9)
-                if self.columnsRowsList[indexOfClicked+1]['text'] != "  ":
-                    self.normalClick(indexOfClicked+1)
-                if self.columnsRowsList[indexOfClicked+11]['text'] != "  ":
-                    self.normalClick(indexOfClicked+11)
-                if self.columnsRowsList[indexOfClicked+10]['text'] != "  ":
-                    self.normalClick(indexOfClicked+10)
+                if self.columnsRowsList[indexOfClicked - 10]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 10)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked - 9]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 9].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 9)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 1]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 1)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 11]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 11].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 11)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 10]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 10)),relief="sunken")
+                    self.win()
             #right edge case
             listOfRightEdgeCases = [19,29,39,49,59,69,79,89]
             if indexOfClicked in listOfRightEdgeCases:
-                if self.columnsRowsList[indexOfClicked-11]['text'] != "  ":
-                    self.normalClick(indexOfClicked-11)
-                if self.columnsRowsList[indexOfClicked-10]['text'] != "  ":
-                    self.normalClick(indexOfClicked-10)
-                if self.columnsRowsList[indexOfClicked-1]['text'] != "  ":
-                    self.normalClick(indexOfClicked-1)
-                if self.columnsRowsList[indexOfClicked+9]['text'] != "  ":
-                    self.normalClick(indexOfClicked+9)
-                if self.columnsRowsList[indexOfClicked+10]['text'] != "  ":
-                    self.normalClick(indexOfClicked+10)
+                if self.columnsRowsList[indexOfClicked - 11]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 11].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 11)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked - 10]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 10)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked - 1]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 1)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 9]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 9].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 9)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 10]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 10)),relief="sunken")
+                    self.win()
             #corner edge cases
             if indexOfClicked == 0:
-                if self.columnsRowsList[indexOfClicked+1]['text'] != "  ":
-                    self.normalClick(indexOfClicked+1)
-                if self.columnsRowsList[indexOfClicked+11]['text'] != "  ":
-                    self.normalClick(indexOfClicked+11)
-                if self.columnsRowsList[indexOfClicked+10]['text'] != "  ":
-                    self.normalClick(indexOfClicked+10)
+                if self.columnsRowsList[indexOfClicked + 1]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 1)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 11]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 11].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 11)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 10]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 10)),relief="sunken")
+                    self.win()
             if indexOfClicked == 9:
-                if self.columnsRowsList[indexOfClicked-1]['text'] != "  ":
-                    self.normalClick(indexOfClicked-1)
-                if self.columnsRowsList[indexOfClicked+9]['text'] != "  ":
-                    self.normalClick(indexOfClicked+9)
-                if self.columnsRowsList[indexOfClicked+10]['text'] != "  ":
-                    self.normalClick(indexOfClicked+10)
+                if self.columnsRowsList[indexOfClicked - 1]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 1)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 9]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 9].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 9)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 10]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 10)),relief="sunken")
+                    self.win()
             if indexOfClicked == 90:
-                if self.columnsRowsList[indexOfClicked-10]['text'] != "  ":
-                   self.normalClick(indexOfClicked-10)
-                if self.columnsRowsList[indexOfClicked-9]['text'] != "  ":
-                    self.normalClick(indexOfClicked-9)
-                if self.columnsRowsList[indexOfClicked+1]['text'] != "  ":
-                    self.normalClick(indexOfClicked+1)
+                if self.columnsRowsList[indexOfClicked - 10]['text'] != "  ":
+                   self.columnsRowsList[indexOfClicked - 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 10)),relief="sunken")
+                   self.win()
+                if self.columnsRowsList[indexOfClicked - 9]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 9].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 9)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 1]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 1)),relief="sunken")
+                    self.win()
             if indexOfClicked == 99:
-                if self.columnsRowsList[indexOfClicked-11]['text'] != "  ":
-                    self.normalClick(indexOfClicked-11)
-                if self.columnsRowsList[indexOfClicked-10]['text'] != "  ":
-                    self.normalClick(indexOfClicked-10)
-                if self.columnsRowsList[indexOfClicked-1]['text'] != "  ":
-                    self.normalClick(indexOfClicked-1)
+                if self.columnsRowsList[indexOfClicked - 11]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 11].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 11)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked - 10]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 10)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked - 1]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 1)),relief="sunken")
+                    self.win()
             #top edge cases
             listOfTopEdgeCases = [1,2,3,4,5,6,7,8]
             if indexOfClicked in listOfTopEdgeCases:
-                if self.columnsRowsList[indexOfClicked-1]['text'] != "  ":
-                    self.normalClick(indexOfClicked-1)
-                if self.columnsRowsList[indexOfClicked+1]['text'] != "  ":
-                    self.normalClick(indexOfClicked+1)
-                if self.columnsRowsList[indexOfClicked+9]['text'] != "  ":
-                    self.normalClick(indexOfClicked+9)
-                if self.columnsRowsList[indexOfClicked+10]['text'] != "  ":
-                    self.normalClick(indexOfClicked+10)
-                if self.columnsRowsList[indexOfClicked+11]['text'] != "  ":
-                    self.normalClick(indexOfClicked+11)
+                if self.columnsRowsList[indexOfClicked - 1]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 1)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 1]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 1)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 9]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 9].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 9)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 10]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 10)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 11]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 11].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 11)),relief="sunken")
+                    self.win()
             #bottom edge cases
             listOfBottomEdgeCases = [91,92,93,94,95,96,97,98]
             if indexOfClicked in listOfBottomEdgeCases:
-                if self.columnsRowsList[indexOfClicked-1]['text'] != "  ":
-                    self.normalClick(indexOfClicked-1)
-                if self.columnsRowsList[indexOfClicked+1]['text'] != "  ":
-                    self.normalClick(indexOfClicked+1)
-                if self.columnsRowsList[indexOfClicked-11]['text'] != "  ":
-                    self.normalClick(indexOfClicked-11)
-                if self.columnsRowsList[indexOfClicked-10]['text'] != "  ":
-                    self.normalClick(indexOfClicked-10)
-                if self.columnsRowsList[indexOfClicked-9]['text'] != "  ":
-                    self.normalClick(indexOfClicked-9)
+                if self.columnsRowsList[indexOfClicked - 1]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 1)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked + 1]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked + 1].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked + 1)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked - 11]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 11].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 11)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked - 10]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 10].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 10)),relief="sunken")
+                    self.win()
+                if self.columnsRowsList[indexOfClicked - 9]['text'] != "  ":
+                    self.columnsRowsList[indexOfClicked - 9].config(text=str(self.bombcounter(indexOfClicked=indexOfClicked - 9)),relief="sunken")
+                    self.win()
 
-            
-                #maximum recursion depth exceeded. cascade not behaving correctly.
+                  

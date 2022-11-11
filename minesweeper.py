@@ -1,9 +1,9 @@
 import tkinter as tk
 from gui import Gui
 
-#version1.1
+#version1.4
 #created by Franklin
-#11-5-2022
+#11-10-2022
 
 root = tk.Tk()
 GUI = Gui(root)
