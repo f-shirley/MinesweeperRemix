@@ -1,7 +1,7 @@
 import tkinter as tk
 from gui import Gui
 
-#version1.4
+#version1.4.0
 #created by Franklin
 #11-10-2022
 
