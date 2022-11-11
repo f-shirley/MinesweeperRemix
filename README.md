@@ -6,5 +6,4 @@ My recreation of the classic game minesweeper using Python's tkinter.
 
 
 Future updates:
-Cascading effect when clicking a button with no bombs around it.
 Right click adding a flag.
