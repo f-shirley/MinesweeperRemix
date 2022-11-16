@@ -60,7 +60,7 @@ class Gui:
             trueOrFalse = random.randint(0,10)
             #yields a 1/3 probability of having a bomb
             if trueOrFalse == 2:
-                self.bomb(y)
+                self.placeBomb(y)
         self.howManyBombs = 0
         for x in range(len(self.columnsRowsList)):
             if self.columnsRowsList[x]["text"] == "  ":
@@ -70,7 +70,7 @@ class Gui:
 
     #assigns a button with text "  " which means there is a bomb there
     #called by setupBombButtons with z being the indexes of the columnsRowsList with bombs
-    def bomb(self,z):
+    def placeBomb(self,z):
         self.columnsRowsList[z].config(text="  ")
         self.columnsRowsList[z].config(command = self.bombClick)
 
@@ -94,7 +94,7 @@ class Gui:
     #which calculates how many bombs surround it and displays on button clicked
     def normalClick(self,index):
         #start and reset timer if game hasnt already been started
-        if self.gamerunning == False and self.columnsRowsList[index]["text"] != "💣":
+        if self.gamerunning == False and self.columnsRowsList[index]["text"] != "💣" and self.columnsRowsList[index]['state'] != 'disabled':
             self.seconds = 0
             self.gamerunning = True
             self.timer()
@@ -122,7 +122,7 @@ class Gui:
             for x in range(len(self.columnsRowsList)):
                 if self.columnsRowsList[x]['text'] == "  ":
                     self.columnsRowsList[x]['text'] = "💣"
-                    self.columnsRowsList[x].config(state = 'disabled')
+                self.columnsRowsList[x].config(state = 'disabled')
     
 
 
