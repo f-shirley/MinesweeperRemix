@@ -1,4 +1,5 @@
 # MinesweeperRemix
 My recreation of the classic game minesweeper using Python's tkinter.
 
-![minesweeperscreenshot](https://user-images.githubusercontent.com/40808284/199891312-ef96ecf6-82af-4f3c-b868-80440f8fb960.JPG)
+
+![minesweeperscreenshot2](https://user-images.githubusercontent.com/40808284/202964577-02e8c87e-dacd-4826-a75d-4995e9eafc8b.JPG)
